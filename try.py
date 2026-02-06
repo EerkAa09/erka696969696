@@ -5,7 +5,7 @@ def darakh(utga):
 
 
 
-def bodoh():
+def bodoh(event=None):
     try:
         ur_dun = eval(delgets.get())
         delgets.delete(0, tk.END)
@@ -13,8 +13,6 @@ def bodoh():
     except:
         delgets.delete(0, tk.END)
         delgets.insert(tk.END, "error")
-        
-
 root = tk.Tk()
 root.title("tooni mashin")
 root.geometry("300x400")
@@ -28,7 +26,8 @@ delgets = tk.Entry(
     fg="white",
 )
 delgets.pack(fill="both", padx=15, pady=15, ipady=10)
-
+delgets.bind("<Return>", bodoh)
+delgets.bind("<KP_Enter>", bodoh)
 tovchluuruud = [
     ("7", "8", "9", "/"),
     ("4", "5", "6", "*"),
@@ -64,7 +63,7 @@ for mor in tovchluuruud:
 
         btn.pack(side="left", expand=True, fill="both", padx=4, pady=4)
 
-# Clear товч
+Clear товч
 clear_btn = tk.Button(
     root,
     text="C",
