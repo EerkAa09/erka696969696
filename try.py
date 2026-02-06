@@ -12,22 +12,20 @@ def bodoh():
         delgets.insert(tk.END, ur_dun)
     except:
         delgets.delete(0, tk.END)
-        delgets.insert(tk.END, "Алдаа")
+        delgets.insert(tk.END, "error")
+        
 
 root = tk.Tk()
-root.title("Калькулятор")
+root.title("tooni mashin")
 root.geometry("300x400")
-root.resizable(False, False)
 root.configure(bg="#1e1e1e")
 
-# Дэлгэц
+# Urdun
 delgets = tk.Entry(
-    root,
-    font=("Segoe UI", 22),
+    font=("Arial", 22),
     justify="right",
     bg="#1e1e1e",
     fg="white",
-    bd=0
 )
 delgets.pack(fill="both", padx=15, pady=15, ipady=10)
 
@@ -74,8 +72,7 @@ clear_btn = tk.Button(
     bg="#e53935",
     fg="white",
     bd=0,
-    command=delgets.delete(0, tk.END)
+    command=lambda: delgets.delete(0, tk.END)
 )
 clear_btn.pack(fill="both", padx=15, pady=10)
-
 root.mainloop()
