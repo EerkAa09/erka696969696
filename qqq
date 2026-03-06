@@ -1,0 +1,379 @@
+# ============================================================
+# ОЮУТНЫ УДИРДЛАГЫН СИСТЕМ
+# Tkinter ашигласан GUI програм
+# ============================================================
+
+# tkinter нь Python-оор цонхтой програм (GUI) хийх сан
+# as tk гэдэг нь товчилж tk гэж нэрлэж ашиглаж байна
+import tkinter as tk
+
+# messagebox нь popup (жижиг мэдэгдлийн цонх) гаргахад ашиглагдана
+from tkinter import messagebox
+
+# json нь өгөгдлийг файлд хадгалах, уншихад ашиглагдана
+import json
+
+# os нь файл байгаа эсэхийг шалгахад ашиглагдана
+import os
+
+
+# ============================================================
+# ТОГТМОЛ ХУВЬСАГЧУУД
+# ============================================================
+
+FILE_NAME = "students.json"      # Оюутны мэдээлэл хадгалах файл
+TEACHER_PASSWORD = "admin123"    # Багшийн нууц үг
+
+students = {}   # Бүх оюутны мэдээллийг хадгалах dictionary
+current_id = 1  # Шинээр нэмэгдэх оюутны ID
+
+
+# ============================================================
+# ФАЙЛААС ӨГӨГДӨЛ УНШИХ
+# ============================================================
+
+def load_data():
+    global students
+    global current_id
+
+    # Хэрэв файл байгаа бол
+    if os.path.exists(FILE_NAME):
+
+        # Файлыг унших горимоор нээнэ
+        with open(FILE_NAME, "r", encoding="utf-8") as file:
+
+            # JSON өгөгдлийг dictionary болгоно
+            students = json.load(file)
+
+        # Хэрэв students хоосон биш бол
+        if students:
+            # Хамгийн их ID-г олж 1 нэмнэ
+            current_id = max(int(i) for i in students.keys()) + 1
+
+
+# ============================================================
+# ФАЙЛД ХАДГАЛАХ
+# ============================================================
+
+def save_data():
+
+    # Файлыг бичих горимоор нээнэ
+    with open(FILE_NAME, "w", encoding="utf-8") as file:
+
+        # students dictionary-г JSON формат руу хөрвүүлж хадгална
+        json.dump(students, file, ensure_ascii=False, indent=4)
+
+
+# ============================================================
+# ДЭЛГЭЦ ЦЭВЭРЛЭХ
+# ============================================================
+
+def clear_screen():
+
+    # root.winfo_children() нь
+    # root цонхон дээр байгаа бүх элементүүдийг авна
+    for widget in root.winfo_children():
+
+        # destroy() нь тухайн элементийг устгана
+        widget.destroy()
+
+
+# ============================================================
+# ROLE СОНГОХ ДЭЛГЭЦ
+# ============================================================
+
+def show_role_screen():
+
+    clear_screen()  # өмнөх дэлгэцийг цэвэрлэнэ
+
+    tk.Label(
+        root,
+        text="Та аль хэрэглэгч вэ?",
+        font=("Arial", 16)
+    ).pack(pady=20)
+
+    tk.Button(
+        root,
+        text="Багш",
+        width=20,
+        command=show_teacher_login
+    ).pack(pady=10)
+
+    tk.Button(
+        root,
+        text="Оюутан",
+        width=20,
+        command=show_student_screen
+    ).pack(pady=10)
+
+
+# ============================================================
+# БАГШ НЭВТРЭХ
+# ============================================================
+
+def show_teacher_login():
+
+    clear_screen()
+
+    tk.Label(root, text="Багшийн нууц үг:").pack(pady=10)
+
+    global password_entry
+
+    # Entry нь текст оруулах талбар
+    # show="*" гэвэл нууц үг одоор харагдана
+    password_entry = tk.Entry(root, show="*")
+    password_entry.pack()
+
+    tk.Button(
+        root,
+        text="Нэвтрэх",
+        command=check_password
+    ).pack(pady=5)
+
+    tk.Button(
+        root,
+        text="Буцах",
+        command=show_role_screen
+    ).pack(pady=5)
+
+
+def check_password():
+
+    # Entry доторх текстийг get() ашиглаж авна
+    if password_entry.get() == TEACHER_PASSWORD:
+
+        show_teacher_screen()
+
+    else:
+        # popup алдаа харуулна
+        messagebox.showerror("Алдаа", "Нууц үг буруу!")
+
+
+# ============================================================
+# БАГШИЙН ХЭСЭГ
+# ============================================================
+
+def show_teacher_screen():
+
+    clear_screen()
+
+    tk.Label(root, text="Багшийн хэсэг",
+             font=("Arial", 14)).pack(pady=10)
+
+    # -------- ОЮУТАН НЭМЭХ --------
+
+    tk.Label(root, text="Оюутны нэр:").pack()
+
+    global name_entry
+    name_entry = tk.Entry(root)
+    name_entry.pack()
+
+    tk.Button(
+        root,
+        text="Оюутан нэмэх",
+        command=add_student
+    ).pack(pady=5)
+
+    # -------- ОНОО НЭМЭХ --------
+
+    tk.Label(root, text="Оюутны ID:").pack()
+
+    global id_entry
+    id_entry = tk.Entry(root)
+    id_entry.pack()
+
+    tk.Label(root, text="Оноо (0-100):").pack()
+
+    global grade_entry
+    grade_entry = tk.Entry(root)
+    grade_entry.pack()
+
+    tk.Button(
+        root,
+        text="Оноо нэмэх",
+        command=add_grade
+    ).pack(pady=5)
+
+    # -------- ОЮУТАН УСТГАХ --------
+
+    tk.Label(root, text="Хасах оюутны ID:").pack()
+
+    global delete_entry
+    delete_entry = tk.Entry(root)
+    delete_entry.pack()
+
+    tk.Button(
+        root,
+        text="Оюутан хасах",
+        command=delete_student
+    ).pack(pady=5)
+
+    tk.Button(
+        root,
+        text="Статистик",
+        command=show_statistics
+    ).pack(pady=10)
+
+    tk.Button(
+        root,
+        text="Буцах",
+        command=show_role_screen
+    ).pack(pady=10)
+
+
+# ============================================================
+# ОЮУТНЫ ХЭСЭГ (ЗӨВХӨН ХАРАХ)
+# ============================================================
+
+def show_student_screen():
+
+    clear_screen()
+
+    tk.Label(root,
+             text="Оюутны жагсаалт",
+             font=("Arial", 14)).pack(pady=10)
+
+    # students dictionary-г давталтаар харуулна
+    for student_id, data in students.items():
+
+        text = (
+            f"ID: {student_id} | "
+            f"{data['name']} | "
+            f"Дүн: {data['grades']}"
+        )
+
+        tk.Label(root, text=text).pack()
+
+    tk.Button(
+        root,
+        text="Буцах",
+        command=show_role_screen
+    ).pack(pady=10)
+
+
+# ============================================================
+# ОЮУТАН НЭМЭХ
+# ============================================================
+
+def add_student():
+
+    global current_id
+
+    name = name_entry.get()
+
+    if name == "":
+        messagebox.showerror("Алдаа", "Нэр хоосон!")
+        return
+
+    student_id = str(current_id)
+
+    # Шинэ оюутан dictionary-д нэмнэ
+    students[student_id] = {
+        "name": name,
+        "grades": []
+    }
+
+    current_id += 1
+
+    save_data()
+
+    messagebox.showinfo("Амжилттай",
+                        f"ID {student_id} нэмэгдлээ!")
+
+
+# ============================================================
+# ОНОО НЭМЭХ
+# ============================================================
+
+def add_grade():
+
+    student_id = id_entry.get()
+
+    try:
+        grade = int(grade_entry.get())
+    except ValueError:
+        messagebox.showerror("Алдаа", "Оноо тоо байх ёстой!")
+        return
+
+    if student_id not in students:
+        messagebox.showerror("Алдаа", "ID байхгүй!")
+        return
+
+    if grade < 0 or grade > 100:
+        messagebox.showerror("Алдаа", "0-100 хооронд!")
+        return
+
+    students[student_id]["grades"].append(grade)
+
+    save_data()
+
+    messagebox.showinfo("Амжилттай", "Оноо нэмэгдлээ!")
+
+
+# ============================================================
+# ОЮУТАН УСТГАХ
+# ============================================================
+
+def delete_student():
+
+    student_id = delete_entry.get()
+
+    if student_id not in students:
+        messagebox.showerror("Алдаа", "ID байхгүй!")
+        return
+
+    # del нь dictionary-с key устгана
+    del students[student_id]
+
+    save_data()
+
+    messagebox.showinfo("Амжилттай", "Устгагдлаа!")
+
+
+# ============================================================
+# СТАТИСТИК
+# ============================================================
+
+def show_statistics():
+
+    total = len(students)
+
+    all_grades = []
+
+    for student in students.values():
+        all_grades.extend(student["grades"])
+
+    if not all_grades:
+        average = 0
+        maximum = 0
+    else:
+        average = sum(all_grades) / len(all_grades)
+        maximum = max(all_grades)
+
+    messagebox.showinfo(
+        "Статистик",
+        f"Нийт оюутан: {total}\n"
+        f"Дундаж оноо: {average:.2f}\n"
+        f"Хамгийн их оноо: {maximum}"
+    )
+
+
+# ============================================================
+# ПРОГРАМ ЭХЛҮҮЛЭХ ХЭСЭГ
+# ============================================================
+
+# Tk() нь үндсэн цонх үүсгэнэ
+root = tk.Tk()
+
+root.title("Оюутны удирдлагын систем")
+root.geometry("450x550")
+
+# Файлаас өгөгдөл уншина
+load_data()
+
+# Эхний дэлгэц харуулна
+show_role_screen()
+
+# mainloop() нь програмыг хаатал ажиллуулна
+root.mainloop()
+
