@@ -1,0 +1,189 @@
+import tkinter as tk          # Tkinter GUI санг tk нэрээр импортлож ашиглана
+from tkinter import messagebox # Popup message (алдаа, мэдээлэл) харуулахад ашиглана
+import json, os               # json = файлд өгөгдөл хадгалах, os = файл байгаа эсэх шалгах
+
+FILE_NAME = "students.json"   # Оюутны мэдээллийг хадгалах JSON файлын нэр
+TEACHER_PASSWORD = "admin123" # Багшийн системд нэвтрэх нууц үг
+
+students = {}                 # Бүх оюутны мэдээллийг хадгалах dictionary
+current_id = 1                # Шинээр нэмэгдэх оюутны дараагийн ID
+
+
+def load_data():              # JSON файлаас оюутны мэдээллийг унших функц
+    global students, current_id
+    if os.path.exists(FILE_NAME):  # Хэрэв файл байгаа бол
+        with open(FILE_NAME, "r", encoding="utf-8") as f: # Файлыг унших горимоор нээх
+            students = json.load(f) # JSON өгөгдлийг dictionary хэлбэрт хөрвүүлэх
+        if students:                # Хэрэв dictionary хоосон биш бол
+            current_id = max(int(i) for i in students.keys()) + 1 # Дараагийн ID-г тооцоолох
+
+
+def save_data():              # Оюутны мэдээллийг JSON файлд хадгалах функц
+    with open(FILE_NAME, "w", encoding="utf-8") as f: # Файлыг бичих горимоор нээх
+        json.dump(students, f, ensure_ascii=False, indent=4) # students dictionary-г JSON файлд хадгалах
+
+
+def clear_screen():           # Цонхон дээрх бүх widget (элемент)-ийг устгах
+    for w in root.winfo_children(): # Root цонхон доторх бүх элементүүдийг авах
+        w.destroy()           # Элемент бүрийг устгах
+
+
+def show_role_screen():       # Хэрэглэгчийн role (Багш эсвэл Оюутан) сонгох дэлгэц
+    clear_screen()            # Өмнөх дэлгэцийг цэвэрлэх
+    tk.Label(root, text="Та аль хэрэглэгч вэ?", font=("Arial",16)).pack(pady=20) # Гарчиг
+    tk.Button(root,text="Багш",width=20,command=show_teacher_login).pack(pady=10) # Багш хэсэг рүү орох товч
+    tk.Button(root,text="Оюутан",width=20,command=show_student_screen).pack(pady=10) # Оюутан хэсэг рүү орох товч
+
+
+def show_teacher_login():     # Багш нэвтрэх дэлгэц
+    clear_screen()            # Дэлгэцийг цэвэрлэх
+    tk.Label(root,text="Багшийн нууц үг:").pack(pady=10) # Нууц үг оруулах текст
+
+    global password_entry
+    password_entry = tk.Entry(root,show="*") # Нууц үг оруулах талбар (* тэмдэгээр харагдана)
+    password_entry.pack()
+
+    tk.Button(root,text="Нэвтрэх",command=check_password).pack() # Нэвтрэх товч
+    tk.Button(root,text="Буцах",command=show_role_screen).pack() # Өмнөх дэлгэц рүү буцах
+
+
+def check_password():         # Оруулсан нууц үгийг шалгах функц
+    if password_entry.get()==TEACHER_PASSWORD: # Entry-д бичсэн нууц үгийг шалгах
+        show_teacher_screen() # Зөв бол багшийн үндсэн дэлгэц рүү орно
+    else:
+        messagebox.showerror("Алдаа","Нууц үг буруу!") # Буруу бол алдааны popup харуулна
+
+
+def show_teacher_screen():    # Багшийн үндсэн удирдлагын дэлгэц
+    clear_screen()
+
+    tk.Label(root,text="Багшийн хэсэг",font=("Arial",14)).pack(pady=10) # Гарчиг
+
+    tk.Label(root,text="Оюутны нэр").pack() # Оюутны нэр оруулах текст
+    global name_entry
+    name_entry = tk.Entry(root) # Нэр оруулах талбар
+    name_entry.pack()
+
+    tk.Button(root,text="Оюутан нэмэх",command=add_student).pack(pady=5) # Шинэ оюутан нэмэх товч
+
+    tk.Label(root,text="Оюутны ID").pack() # Оюутны ID оруулах текст
+    global id_entry
+    id_entry = tk.Entry(root)  # ID оруулах талбар
+    id_entry.pack()
+
+    tk.Label(root,text="Хичээл").pack() # Хичээл сонгох текст
+    global subject_var
+    subject_var = tk.StringVar(value="Математик") # Default хичээл
+    tk.OptionMenu(root,subject_var,"Математик","Програмчлал","Англи","Физик").pack() # Хичээл сонгох цэс
+
+    tk.Label(root,text="Оноо").pack() # Оноо оруулах текст
+    global grade_entry
+    grade_entry = tk.Entry(root) # Оноо оруулах талбар
+    grade_entry.pack()
+
+    tk.Button(root,text="Оноо нэмэх",command=add_grade).pack(pady=5) # Оюутанд оноо нэмэх товч
+
+    tk.Label(root,text="Хасах ID").pack() # Устгах оюутны ID оруулах
+    global delete_entry
+    delete_entry = tk.Entry(root) # ID оруулах талбар
+    delete_entry.pack()
+
+    tk.Button(root,text="Оюутан устгах",command=delete_student).pack(pady=5) # Оюутан устгах товч
+
+    tk.Button(root,text="Оюутны статистик",command=show_statistics).pack(pady=10) # Оюутны статистик харах
+    tk.Button(root,text="Буцах",command=show_role_screen).pack() # Буцах товч
+
+
+def show_student_screen():    # Оюутнуудын жагсаалтыг харуулах дэлгэц
+    clear_screen()
+
+    tk.Label(root,text="Оюутны жагсаалт",font=("Arial",14)).pack(pady=10) # Гарчиг
+
+    for sid,data in students.items(): # Бүх оюутны мэдээллээр давталт хийх
+        grades = " ".join([f"{s}:{g}" for s,g in data["grades"].items()]) # Хичээл:оноо текст үүсгэх
+        tk.Label(root,text=f"ID:{sid} | {data['name']} | {grades}").pack() # Оюутны мэдээллийг харуулах
+
+    tk.Button(root,text="Буцах",command=show_role_screen).pack(pady=10) # Буцах товч
+
+
+def add_student():            # Шинэ оюутан нэмэх функц
+    global current_id
+    name = name_entry.get()   # Entry талбараас нэр авах
+
+    if not name:              # Нэр хоосон эсэхийг шалгах
+        messagebox.showerror("Алдаа","Нэр хоосон!")
+        return
+
+    sid = str(current_id)     # ID-г string төрөлд хөрвүүлэх
+    students[sid] = {"name":name,"grades":{}} # Шинэ оюутны мэдээллийг dictionary-д нэмэх
+
+    current_id += 1           # Дараагийн ID-г 1-ээр нэмэх
+    save_data()               # Өгөгдлийг файлд хадгалах
+
+    messagebox.showinfo("Амжилттай",f"ID {sid} нэмэгдлээ!") # Амжилттай нэмэгдсэн тухай мэдэгдэл
+
+
+def add_grade():              # Оюутанд оноо нэмэх функц
+    sid = id_entry.get()      # Оюутны ID авах
+    subject = subject_var.get() # Сонгосон хичээлийг авах
+
+    try:
+        grade = int(grade_entry.get()) # Оноог integer төрөлд хөрвүүлэх
+    except:
+        messagebox.showerror("Алдаа","Оноо тоо байх ёстой!")
+        return
+
+    if sid not in students:   # Оюутны ID байгаа эсэхийг шалгах
+        messagebox.showerror("Алдаа","ID байхгүй!")
+        return
+
+    if not 0<=grade<=100:     # Оноо 0-100 хооронд байгаа эсэхийг шалгах
+        messagebox.showerror("Алдаа","0-100!")
+        return
+
+    students[sid]["grades"][subject]=grade # Сонгосон хичээлд оноо нэмэх
+    save_data()               # Файлд хадгалах
+
+    messagebox.showinfo("Амжилттай","Оноо нэмэгдлээ!") # Амжилттай нэмэгдсэн popup
+
+
+def delete_student():         # Оюутныг системээс устгах функц
+    sid = delete_entry.get()  # Устгах оюутны ID авах
+
+    if sid not in students:   # ID байгаа эсэхийг шалгах
+        messagebox.showerror("Алдаа","ID байхгүй!")
+        return
+
+    del students[sid]         # Dictionary-оос оюутныг устгах
+    save_data()               # Өөрчлөлтийг файлд хадгалах
+
+    messagebox.showinfo("Амжилттай","Устгагдлаа!") # Амжилттай устгасан тухай popup
+
+
+def show_statistics():        # Нэг оюутны статистик харах функц
+    sid = id_entry.get()      # Оюутны ID авах
+
+    if sid not in students:   # ID байгаа эсэхийг шалгах
+        messagebox.showerror("Алдаа","ID байхгүй!")
+        return
+
+    student = students[sid]   # Сонгосон оюутны мэдээлэл
+
+    grades = list(student["grades"].values()) # Бүх оноог list хэлбэрт оруулах
+
+    avg = sum(grades)/len(grades) if grades else 0 # Дундаж оноо
+    mx = max(grades) if grades else 0               # Хамгийн их оноо
+
+    messagebox.showinfo(
+        "Статистик",
+        f"Нэр: {student['name']}\n"
+        f"Хичээл: {student['grades']}\n"
+        f"Дундаж: {avg:.2f}\n"
+        f"Хамгийн их: {mx}"
+    )
+root = tk.Tk()
+root.title("Оюутны удирдлагын систем") # Цонхны гарчиг
+root.geometry("450x550") # Цонхны хэмжээ
+load_data()
+show_role_screen()
+root.mainloop()
